@@ -4,8 +4,12 @@ class Matrix:
     def __init__(self, data):
         self.data = np.array(data, dtype=float)
 
-    def rref(self):
-        M = self.data.copy()
+    def rref(self, A=None):
+        if A is None:
+            M = self.data.copy()
+        else:
+            M = np.array(A, dtype=float)
+            
         rows, cols = M.shape
         lead = 0
 
@@ -24,27 +28,38 @@ class Matrix:
             M[r] = M[r] / M[r, lead]
             for i in range(rows):
                 if i != r:
-                    M[i] = M[i] - M[i, lead] * M[r]
+                    M[i] -= M[i, lead] * M[r]
             lead += 1
 
         return M
 
-    def gram_schmidt(self):
-        V = self.data
+    def gram_schmidt(self, V=None):
+        if V is None:
+            V = self.data
+        else:
+            V = np.array(V, dtype=float)
+            
         n, m = V.shape
         Q = np.zeros((n, m))
 
         for i in range(m):
-            q = V[:, i]
+            q = V[:, i].copy()
             for j in range(i):
                 q -= np.dot(Q[:, j], V[:, i]) * Q[:, j]
-            q /= np.linalg.norm(q)
-            Q[:, i] = q
+            q_norm = np.linalg.norm(q)
+            if q_norm < 1e-10:
+                Q[:, i] = np.zeros_like(q)
+            else:
+                Q[:, i] = q / q_norm
 
         return Q
 
-    def inverse(self):
-        A = self.data
+    def inverse(self, A=None):
+        if A is None:
+            A = self.data
+        else:
+            A = np.array(A, dtype=float)
+            
         n = A.shape[0]
         Aug = np.hstack([A, np.eye(n)])
 
@@ -58,8 +73,12 @@ class Matrix:
 
         return Aug[:, n:]
 
-    def determinant(self):
-        U = self.data.copy()
+    def determinant(self, A=None):
+        if A is None:
+            U = self.data.copy()
+        else:
+            U = np.array(A, dtype=float)
+            
         n = U.shape[0]
         swaps = 0
 
@@ -74,8 +93,12 @@ class Matrix:
 
         return (-1) ** swaps * np.prod(np.diag(U))
 
-    def lu_decomposition(self):
-        A = self.data
+    def lu_decomposition(self, A=None):
+        if A is None:
+            A = self.data.copy()
+        else:
+            A = np.array(A, dtype=float)
+            
         n = A.shape[0]
         L = np.eye(n)
         U = A.copy()
